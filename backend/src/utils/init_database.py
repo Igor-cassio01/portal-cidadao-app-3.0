@@ -13,43 +13,20 @@ import random
 def create_departments_and_categories():
     """Cria departamentos e categorias base"""
     
-    # Verificar se já existem
     if Department.query.first():
         print("✅ Departamentos já existem")
         return
     
     print("🏛️ Criando departamentos...")
     
-    # Criar departamentos
     departments_data = [
-        {
-            'name': 'Obras Públicas',
-            'description': 'Responsável por obras públicas, manutenção de ruas e infraestrutura urbana'
-        },
-        {
-            'name': 'Serviços Urbanos',
-            'description': 'Limpeza urbana, coleta de lixo e manutenção de praças'
-        },
-        {
-            'name': 'Iluminação Pública',
-            'description': 'Manutenção e instalação de iluminação pública'
-        },
-        {
-            'name': 'Meio Ambiente',
-            'description': 'Questões ambientais e sustentabilidade'
-        },
-        {
-            'name': 'Trânsito',
-            'description': 'Transporte público e trânsito'
-        },
-        {
-            'name': 'Saneamento',
-            'description': 'Água, esgoto e drenagem'
-        },
-        {
-            'name': 'Administração',
-            'description': 'Administração geral e outros serviços'
-        }
+        {'name': 'Obras Públicas', 'description': 'Responsável por obras públicas, manutenção de ruas e infraestrutura urbana'},
+        {'name': 'Serviços Urbanos', 'description': 'Limpeza urbana, coleta de lixo e manutenção de praças'},
+        {'name': 'Iluminação Pública', 'description': 'Manutenção e instalação de iluminação pública'},
+        {'name': 'Meio Ambiente', 'description': 'Questões ambientais e sustentabilidade'},
+        {'name': 'Trânsito', 'description': 'Transporte público e trânsito'},
+        {'name': 'Saneamento', 'description': 'Água, esgoto e drenagem'},
+        {'name': 'Administração', 'description': 'Administração geral e outros serviços'}
     ]
     
     departments = {}
@@ -62,7 +39,6 @@ def create_departments_and_categories():
     db.session.commit()
     print(f"✅ {len(departments)} departamentos criados!")
     
-    # Criar categorias
     print("📁 Criando categorias...")
     
     categories_data = [
@@ -95,7 +71,6 @@ def create_departments_and_categories():
 def create_admin_users():
     """Cria usuários administrativos"""
     
-    # Verificar se já existem admins
     if User.query.filter_by(user_type=UserType.ADMIN).first():
         print("✅ Administradores já existem")
         return
@@ -112,34 +87,38 @@ def create_admin_users():
         {'name': 'Pedro Lima', 'email': 'pedro.lima@lavras.mg.gov.br', 'department': 'Trânsito', 'phone': '(35) 99999-0005'}
     ]
     
+    admin_users_to_add = []
     for user_data in admin_users_data:
-        dept = Department.query.filter_by(name=user_data['department']).first()
-        user = User(
-            name=user_data['name'],
-            email=user_data['email'],
-            phone=user_data['phone'],
-            user_type=UserType.ADMIN,
-            department_id=dept.id if dept else None,
-            password_hash=generate_password_hash('admin123'),
-            is_active=True
-        )
-        db.session.add(user)
+        if not User.query.filter_by(email=user_data["email"]).first():
+            dept = Department.query.filter_by(name=user_data["department"]).first()
+            user = User(
+                name=user_data["name"],
+                email=user_data["email"],
+                phone=user_data["phone"],
+                user_type=UserType.ADMIN,
+                department_id=dept.id if dept else None,
+                password_hash=generate_password_hash("admin123"),
+                is_active=True
+            )
+            db.session.add(user)
+            admin_users_to_add.append(user)
     
-    db.session.commit()
-    print(f"✅ {len(admin_users_data)} administradores criados!")
+    if admin_users_to_add:
+        db.session.commit()
+        print(f"✅ {len(admin_users_to_add)} administradores criados!")
+    else:
+        print("✅ Administradores já existem")
 
 
 def create_realistic_citizens_and_occurrences():
     """Cria cidadãos e ocorrências realistas"""
     
-    # Verificar se já existem ocorrências
     if Occurrence.query.first():
         print("✅ Ocorrências já existem")
         return
     
     print("👥 Criando cidadãos realistas...")
     
-    # Nomes realistas
     citizen_names = [
         'Ana Silva Santos', 'Carlos Eduardo Lima', 'Maria José Oliveira', 'João Pedro Costa',
         'Fernanda Alves Pereira', 'Roberto Ferreira Silva', 'Juliana Mendes Souza', 'Paulo Ricardo Santos',
@@ -153,30 +132,37 @@ def create_realistic_citizens_and_occurrences():
         'Simone Oliveira Santos', 'Daniel Lima Costa', 'Roberta Silva Alves', 'Henrique Santos Lima'
     ]
     
-    citizens = []
-    for i, name in enumerate(citizen_names):
+    citizens_to_add = []
+    for name in citizen_names:
         email = name.lower().replace(' ', '.') + '@email.com'
-        citizen = User(
-            name=name,
-            email=email,
-            phone=f'(35) 9{random.randint(1000, 9999)}-{random.randint(1000, 9999)}',
-            password_hash=generate_password_hash('123456'),
-            user_type=UserType.CITIZEN,
-            is_active=True
-        )
-        db.session.add(citizen)
-        citizens.append(citizen)
+        if not User.query.filter_by(email=email).first():
+            citizen = User(
+                name=name,
+                email=email,
+                phone=f'(35) 9{random.randint(1000, 9999)}-{random.randint(1000, 9999)}',
+                password_hash=generate_password_hash('123456'),
+                user_type=UserType.CITIZEN,
+                is_active=True
+            )
+            db.session.add(citizen)
+            citizens_to_add.append(citizen)
     
-    db.session.commit()
-    print(f"✅ {len(citizens)} cidadãos criados!")
-    
-    # Criar ocorrências
+    if citizens_to_add:
+        db.session.commit()
+        print(f"✅ {len(citizens_to_add)} cidadãos criados!")
+    else:
+        print("✅ Cidadãos já existem")
+
+    if Occurrence.query.first():
+        print("✅ Ocorrências já existem")
+        return
+
     print("📋 Criando 1000 ocorrências realistas...")
-    
+
     categories = Category.query.all()
     admins = User.query.filter_by(user_type=UserType.ADMIN).all()
-    
-    # Bairros de Lavras-MG
+    citizens = User.query.filter_by(user_type=UserType.CITIZEN).all()
+
     neighborhoods = [
         'Centro', 'Jardim América', 'Vila Esperança', 'Morada do Sol I', 'Morada do Sol II',
         'Morada do Sol III', 'Jardim Floresta', 'Bela Vista', 'São Cristóvão', 'Vila São Francisco',
@@ -184,15 +170,14 @@ def create_realistic_citizens_and_occurrences():
         'Bairro Industrial', 'Jardim Glória', 'Vila Santa Terezinha', 'Residencial Ipê',
         'Jardim Eldorado', 'Residencial Parque das Águas'
     ]
-    
+
     streets = [
         'Rua Tiradentes', 'Avenida Dr. Sylvio Menicucci', 'Rua Coronel José Bento',
         'Rua das Américas', 'Avenida Brasil', 'Rua São Paulo', 'Rua da Esperança',
         'Rua da Paz', 'Rua São José', 'Rua do Sol', 'Rua da Aurora', 'Rua dos Girassóis',
         'Rua das Margaridas', 'Rua das Acácias', 'Rua dos Ipês'
     ]
-    
-    # Títulos por categoria
+
     titles_by_category = {
         'Buraco na Rua': [
             'Buraco grande prejudica trânsito',
@@ -247,239 +232,43 @@ def create_realistic_citizens_and_occurrences():
             'Cão abandonado precisa resgate',
             'Animal ferido na via pública',
             'Gato abandonado em situação precária',
-            'Animal doméstico perdido',
-            'Resgate de animal necessário'
+            'Resgate de animal em perigo',
+            'Animal perdido precisa de ajuda'
         ],
         'Outros': [
-            'Problema diverso na via pública',
-            'Situação que requer atenção municipal',
-            'Demanda específica do cidadão',
+            'Problema geral na vizinhança',
+            'Necessidade de manutenção na área',
             'Solicitação de melhoria urbana',
-            'Questão municipal diversa'
+            'Questão não listada',
+            'Outro problema a ser resolvido'
         ]
     }
-    
-    occurrences = []
-    timeline_entries = []
-    
-    for i in range(1000):
-        # Data aleatória nos últimos 12 meses
-        days_ago = random.randint(0, 365)
-        created_at = datetime.utcnow() - timedelta(days=days_ago)
-        
-        # Dados aleatórios
+
+    for _ in range(1000):
         category = random.choice(categories)
         citizen = random.choice(citizens)
-        neighborhood = random.choice(neighborhoods)
-        street = random.choice(streets)
-        number = random.randint(1, 999)
         
-        # Endereço
-        address = f"{street}, {number}, {neighborhood}, Lavras-MG"
-        
-        # Coordenadas de Lavras-MG
-        latitude = -21.2450 + random.uniform(-0.05, 0.05)
-        longitude = -45.0000 + random.uniform(-0.05, 0.05)
-        
-        # Título baseado na categoria
-        if category.name in titles_by_category:
-            title = random.choice(titles_by_category[category.name])
-        else:
-            title = f"Problema de {category.name.lower()}"
-        
-        # Descrição
-        description = f"Problema reportado pelo cidadão na região do {neighborhood}. {title}. Necessita atenção da prefeitura."
-        
-        # Status baseado na idade
-        if days_ago > 180:  # Muito antiga
-            status = random.choice([OccurrenceStatus.RESOLVED, OccurrenceStatus.CLOSED])
-            resolved = True
-        elif days_ago > 90:  # Antiga
-            status = random.choices(
-                [OccurrenceStatus.RESOLVED, OccurrenceStatus.IN_PROGRESS, OccurrenceStatus.CLOSED],
-                weights=[40, 30, 30]
-            )[0]
-            resolved = status in [OccurrenceStatus.RESOLVED, OccurrenceStatus.CLOSED]
-        elif days_ago > 30:  # Recente
-            status = random.choices(
-                [OccurrenceStatus.IN_PROGRESS, OccurrenceStatus.OPEN, OccurrenceStatus.RESOLVED],
-                weights=[50, 30, 20]
-            )[0]
-            resolved = status == OccurrenceStatus.RESOLVED
-        else:  # Nova
-            status = random.choices(
-                [OccurrenceStatus.OPEN, OccurrenceStatus.IN_PROGRESS],
-                weights=[60, 40]
-            )[0]
-            resolved = False
-        
-        # Prioridade
-        priority = random.choices(
-            [Priority.LOW, Priority.MEDIUM, Priority.HIGH, Priority.URGENT],
-            weights=[30, 40, 20, 10]
-        )[0]
-        
-        # Criar ocorrência
         occurrence = Occurrence(
-            title=title,
-            description=description,
+            title=random.choice(titles_by_category.get(category.name, ['Título genérico'])),
+            description=f"Descrição detalhada da ocorrência número {_ + 1}. O problema persiste e necessita de atenção imediata.",
             category_id=category.id,
             citizen_id=citizen.id,
-            latitude=latitude,
-            longitude=longitude,
-            address=address,
-            status=status,
-            priority=priority,
-            created_at=created_at,
-            updated_at=created_at
+            latitude=random.uniform(-21.25, -21.23),
+            longitude=random.uniform(-45.0, -44.98),
+            address=f"{random.choice(streets)}, {random.randint(100, 2000)}, {random.choice(neighborhoods)}",
+            status=random.choice(list(OccurrenceStatus)),
+            priority=random.choice(list(Priority)),
+            created_at=datetime.utcnow() - timedelta(days=random.randint(1, 365))
         )
-        
-        # Se não está aberta, atribuir admin
-        if status != OccurrenceStatus.OPEN:
-            occurrence.assigned_to = random.choice(admins).id
-            
-            # Se resolvida, adicionar dados de resolução
-            if resolved:
-                resolve_days = random.randint(1, min(days_ago, 30))
-                occurrence.resolved_at = created_at + timedelta(days=resolve_days)
-                occurrence.updated_at = occurrence.resolved_at
-                
-                # 75% das resolvidas têm avaliação
-                if random.random() < 0.75:
-                    occurrence.rating = random.choices(
-                        [1, 2, 3, 4, 5],
-                        weights=[5, 10, 15, 35, 35]
-                    )[0]
-                    
-                    if occurrence.rating >= 4:
-                        occurrence.feedback = random.choice([
-                            "Excelente atendimento! Problema resolvido rapidamente.",
-                            "Muito satisfeito com a solução apresentada.",
-                            "Equipe muito eficiente e atenciosa.",
-                            "Problema resolvido com qualidade.",
-                            "Parabéns pelo trabalho da prefeitura!"
-                        ])
-                    elif occurrence.rating == 3:
-                        occurrence.feedback = random.choice([
-                            "Problema resolvido, mas demorou um pouco.",
-                            "Atendimento razoável, poderia ser mais rápido.",
-                            "Solução adequada, mas esperava mais agilidade."
-                        ])
-                    else:
-                        occurrence.feedback = random.choice([
-                            "Demorou muito para resolver o problema.",
-                            "Atendimento demorado e insatisfatório.",
-                            "Esperava uma solução mais rápida."
-                        ])
-        
         db.session.add(occurrence)
-        occurrences.append(occurrence)
-        
-        # Criar timeline de criação
-        timeline_entries.append({
-            'occurrence': occurrence,
-            'user_id': occurrence.citizen_id,
-            'action': 'created',
-            'description': f"Ocorrência criada: {occurrence.title}",
-            'created_at': created_at
-        })
-        
-        # Timeline de atribuição
-        if occurrence.assigned_to:
-            timeline_entries.append({
-                'occurrence': occurrence,
-                'user_id': occurrence.assigned_to,
-                'action': 'assigned',
-                'description': f"Atribuída ao departamento de {category.department.name}",
-                'created_at': created_at + timedelta(hours=random.randint(1, 48))
-            })
-        
-        # Timeline de resolução
-        if occurrence.resolved_at:
-            timeline_entries.append({
-                'occurrence': occurrence,
-                'user_id': occurrence.assigned_to,
-                'action': 'resolved',
-                'description': f"Problema resolvido. Status: {status.value}",
-                'created_at': occurrence.resolved_at
-            })
-    
+
     db.session.commit()
-    print(f"✅ {len(occurrences)} ocorrências criadas!")
-    
-    # Criar timeline
-    print("📅 Criando timeline detalhada...")
-    for entry in timeline_entries:
-        timeline = OccurrenceTimeline(
-            occurrence_id=entry['occurrence'].id,
-            user_id=entry['user_id'],
-            action=entry['action'],
-            description=entry['description'],
-            created_at=entry['created_at']
-        )
-        db.session.add(timeline)
-    
-    db.session.commit()
-    print(f"✅ {len(timeline_entries)} entradas de timeline criadas!")
-    
-    # Estatísticas
-    print("\n📊 ESTATÍSTICAS FINAIS:")
-    print(f"👥 Cidadãos: {len(citizens)}")
-    print(f"📋 Ocorrências: {len(occurrences)}")
-    print(f"📅 Timeline: {len(timeline_entries)} entradas")
-    
-    # Por status
-    print(f"\n📈 DISTRIBUIÇÃO POR STATUS:")
-    for status in OccurrenceStatus:
-        count = len([o for o in occurrences if o.status == status])
-        percentage = (count / len(occurrences)) * 100
-        print(f"   {status.value}: {count} ({percentage:.1f}%)")
-    
-    # Por categoria
-    print(f"\n📁 DISTRIBUIÇÃO POR CATEGORIA:")
-    cat_stats = {}
-    for occurrence in occurrences:
-        cat_name = occurrence.category.name
-        cat_stats[cat_name] = cat_stats.get(cat_name, 0) + 1
-    
-    for cat_name, count in sorted(cat_stats.items(), key=lambda x: x[1], reverse=True):
-        percentage = (count / len(occurrences)) * 100
-        print(f"   {cat_name}: {count} ({percentage:.1f}%)")
-    
-    # Métricas de satisfação
-    rated_occurrences = [o for o in occurrences if o.rating]
-    if rated_occurrences:
-        avg_rating = sum(o.rating for o in rated_occurrences) / len(rated_occurrences)
-        print(f"\n⭐ MÉTRICAS DE SATISFAÇÃO:")
-        print(f"   Avaliação média: {avg_rating:.2f}/5.0")
-        print(f"   Ocorrências avaliadas: {len(rated_occurrences)} ({(len(rated_occurrences)/len(occurrences)*100):.1f}%)")
+    print("✅ 1000 ocorrências criadas!")
 
 
 def init_database(app):
-    """
-    Inicializa o banco de dados na ordem correta
-    Resolve problemas de importação circular
-    """
     with app.app_context():
-        print("\n🚀 INICIANDO BANCO DE DADOS DO PORTAL DO CIDADÃO")
-        print("=" * 60)
-        
-        # 1. Criar todas as tabelas
-        print("\n📦 Criando estrutura do banco de dados...")
         db.create_all()
-        print("✅ Tabelas criadas com sucesso!")
-        
-        # 2. Criar departamentos e categorias
         create_departments_and_categories()
-        
-        # 3. Criar usuários administrativos
         create_admin_users()
-        
-        # 4. Criar cidadãos e ocorrências realistas
         create_realistic_citizens_and_occurrences()
-        
-        print("\n" + "=" * 60)
-        print("🎉 BANCO DE DADOS INICIALIZADO COM SUCESSO!")
-        print("💡 O sistema está pronto para apresentação ao investidor!")
-        print("=" * 60 + "\n")
-
