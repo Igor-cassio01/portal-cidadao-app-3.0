@@ -22,6 +22,7 @@ import CitizenOccurrences from './pages/citizen/CitizenOccurrences'
 import CitizenMap from './pages/citizen/CitizenMap'
 import CitizenProfile from './pages/citizen/CitizenProfile'
 import CreateOccurrence from './pages/citizen/CreateOccurrence'
+import OccurrenceDetail from './pages/citizen/OccurrenceDetail'
 
 // Páginas públicas
 import BeforeAfter from './pages/public/BeforeAfter'
@@ -193,6 +194,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <CitizenProfile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/citizen/occurrence/:id" 
+          element={
+            <ProtectedRoute>
+              <OccurrenceDetail />
             </ProtectedRoute>
           } 
         />
