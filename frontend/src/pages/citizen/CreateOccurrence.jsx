@@ -210,23 +210,30 @@ const CreateOccurrence = () => {
       if (photos.length > 0) {
         const formDataPhotos = new FormData()
         photos.forEach(photo => {
-          formDataPhotos.append('photos', photo.file)
+          formDataPhotos.append("photos", photo.file)
         })
 
-        await api.post(`/occurrences/${occurrenceId}/photos`, formDataPhotos, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
+        try {
+          await api.post(`/occurrences/${occurrenceId}/photos`, formDataPhotos, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          })
+        } catch (photoUploadError) {
+          console.error("Erro ao fazer upload das fotos:", photoUploadError)
+          setError("Ocorrência criada, mas houve um erro ao enviar as fotos: " + (photoUploadError.response?.data?.error || photoUploadError.message))
+          // Não retorna aqui para que a ocorrência seja marcada como sucesso mesmo sem as fotos
+        }
       }
 
       setSuccess(true)
       setTimeout(() => {
-        navigate('/citizen/occurrences')
+        navigate("/citizen/occurrences")
       }, 2000)
 
-    } catch (error) {
-      setError(error.response?.data?.error || 'Erro ao criar ocorrência')
+    } catch (occurrenceCreationError) {
+      console.error("Erro ao criar ocorrência:", occurrenceCreationError)
+      setError(occurrenceCreationError.response?.data?.error || "Erro ao criar ocorrência. Verifique os dados e tente novamente.")
     } finally {
       setLoading(false)
     }
