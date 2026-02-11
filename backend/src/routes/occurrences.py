@@ -8,7 +8,8 @@ from datetime import datetime
 
 occurrences_bp = Blueprint('occurrences', __name__)
 
-UPLOAD_FOLDER = 'uploads'
+# Caminho relativo ao diretório backend/src
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
@@ -151,8 +152,7 @@ def upload_photos(occurrence_id):
         uploaded_photos = []
         
         # Criar diretório de upload se não existir
-        upload_path = os.path.join('src', 'static', UPLOAD_FOLDER)
-        os.makedirs(upload_path, exist_ok=True)
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         
         for file in files:
             if file and file.filename and allowed_file(file.filename):
@@ -161,7 +161,7 @@ def upload_photos(occurrence_id):
                 unique_filename = f"{uuid.uuid4()}.{file_extension}"
                 
                 # Salvar arquivo
-                file_path = os.path.join(upload_path, unique_filename)
+                file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(file_path)
                 
                 # Criar registro no banco
