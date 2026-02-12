@@ -4,7 +4,7 @@ from src.models.models import db, Occurrence, OccurrenceStatus, Priority, User, 
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.decorators import admin_required, department_manager_required
+from src.utils.decorators import admin_required, department_manager_required
 from datetime import datetime
 
 triage_bp = Blueprint('triage', __name__)
@@ -73,8 +73,8 @@ def assign_occurrence(occurrence_id):
         timeline_entry = OccurrenceTimeline(
             occurrence_id=occurrence.id,
             user_id=current_user_id,
-            status_change=f"Triagem e Atribuição Concluída",
-            details=f"Atribuída ao departamento: {department.name}. Prioridade: {priority.upper()}. Atribuída a: {assigned_to_user.name if assigned_to_id else 'Nenhum usuário específico'}."
+            action="Triagem e Atribuição Concluída",
+            description=f"Atribuída ao departamento: {department.name}. Prioridade: {priority.upper()}. Atribuída a: {assigned_to_user.name if assigned_to_id else 'Nenhum usuário específico'}."
         )
         db.session.add(timeline_entry)
         db.session.commit()

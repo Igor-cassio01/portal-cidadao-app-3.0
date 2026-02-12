@@ -301,10 +301,10 @@ const CitizenOccurrences = () => {
                 <CardContent className="p-6">
                   <div className="flex gap-4">
                     {/* Foto da Ocorrência */}
-                    {occurrence.photo_url && (
+                    {occurrence.photos && occurrence.photos.length > 0 && (
                       <div className="flex-shrink-0">
                         <img
-                          src={occurrence.photo_url}
+                          src={occurrence.photos[0].url}
                           alt={occurrence.title}
                           className="w-24 h-24 rounded-lg object-cover"
                         />
@@ -326,12 +326,12 @@ const CitizenOccurrences = () => {
                           <p className="text-gray-600 mb-3 line-clamp-2">{occurrence.description}</p>
                           
                           {/* Comparativo Antes x Depois */}
-                          {occurrence.after_photo_url && (
+                          {occurrence.photos && occurrence.photos.some(p => p.filename.startsWith('after_')) && (
                             <div className="mt-4 border rounded-lg overflow-hidden shadow-sm">
                               <div className="grid grid-cols-2 gap-0.5 bg-gray-100">
                                 <div className="relative">
                                   <img
-                                    src={occurrence.photo_url || 'https://via.placeholder.com/300x200?text=Foto+Antes'}
+                                    src={occurrence.photos.find(p => !p.filename.startsWith('after_'))?.url || 'https://via.placeholder.com/300x200?text=Foto+Antes'}
                                     alt="Foto Antes"
                                     className="w-full h-32 object-cover"
                                   />
@@ -341,7 +341,7 @@ const CitizenOccurrences = () => {
                                 </div>
                                 <div className="relative">
                                   <img
-                                    src={occurrence.after_photo_url}
+                                    src={occurrence.photos.find(p => p.filename.startsWith('after_'))?.url}
                                     alt="Foto Depois"
                                     className="w-full h-32 object-cover"
                                   />

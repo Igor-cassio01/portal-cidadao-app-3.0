@@ -114,8 +114,7 @@ def create_occurrence():
             occurrence_id=occurrence.id,
             user_id=user_id,
             action='created',
-            description='Ocorrência criada pelo cidadão',
-            new_status=OccurrenceStatus.OPEN
+            description='Ocorrência criada pelo cidadão'
         )
         db.session.add(timeline_entry)
         
@@ -240,9 +239,7 @@ def update_status(occurrence_id):
             occurrence_id=occurrence_id,
             user_id=user_id,
             action='status_changed',
-            description=comment or f'Status alterado para {new_status_enum.value}',
-            old_status=old_status,
-            new_status=new_status_enum
+            description=comment or f'Status alterado para {new_status_enum.value}'
         )
         db.session.add(timeline_entry)
         
@@ -391,9 +388,7 @@ def rate_occurrence(occurrence_id):
             occurrence_id=occurrence_id,
             user_id=user_id,
             action='rated',
-            description=f'Avaliação: {rating} estrelas',
-            old_status=OccurrenceStatus.RESOLVED,
-            new_status=OccurrenceStatus.CLOSED
+            description=f'Avaliação: {rating} estrelas'
         )
         db.session.add(timeline_entry)
         

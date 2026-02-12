@@ -3,21 +3,16 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.models import db, User, Department, Category, Occurrence, OccurrenceStatus, Priority, UserType
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
+from src.utils.decorators import admin_required
 
 admin_bp = Blueprint('admin', __name__)
-
-def admin_required():
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    return user and user.user_type == UserType.ADMIN
 
 # Departamentos
 @admin_bp.route('/departments', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_departments():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         departments = Department.query.filter_by(is_active=True).all()
         return jsonify({
@@ -29,10 +24,9 @@ def get_departments():
 
 @admin_bp.route('/departments', methods=['POST'])
 @jwt_required()
+@admin_required
 def create_department():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         data = request.get_json()
         
@@ -72,10 +66,9 @@ def get_categories():
 
 @admin_bp.route('/categories', methods=['POST'])
 @jwt_required()
+@admin_required
 def create_category():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         data = request.get_json()
         
@@ -112,10 +105,9 @@ def create_category():
 # Dashboard e Estatísticas
 @admin_bp.route('/dashboard/stats', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_dashboard_stats():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         # Estatísticas gerais
         total_occurrences = Occurrence.query.count()
@@ -181,10 +173,9 @@ def get_dashboard_stats():
 
 @admin_bp.route('/dashboard/occurrences-by-category', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_occurrences_by_category():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         # Ocorrências por categoria
         category_stats = db.session.query(
@@ -213,10 +204,9 @@ def get_occurrences_by_category():
 
 @admin_bp.route('/dashboard/occurrences-timeline', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_occurrences_timeline():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         # Últimos 30 dias
         days = int(request.args.get('days', 30))
@@ -249,10 +239,9 @@ def get_occurrences_timeline():
 
 @admin_bp.route('/dashboard/performance-by-department', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_performance_by_department():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         # Performance por departamento
         dept_stats = db.session.query(
@@ -291,10 +280,9 @@ def get_performance_by_department():
 # Usuários administrativos
 @admin_bp.route('/users', methods=['GET'])
 @jwt_required()
+@admin_required
 def get_admin_users():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         users = User.query.filter_by(user_type=UserType.ADMIN, is_active=True).all()
         return jsonify({
@@ -306,10 +294,9 @@ def get_admin_users():
 
 @admin_bp.route('/users', methods=['POST'])
 @jwt_required()
+@admin_required
 def create_admin_user():
     try:
-        if not admin_required():
-            return jsonify({'error': 'Acesso negado'}), 403
         
         data = request.get_json()
         

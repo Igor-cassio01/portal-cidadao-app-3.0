@@ -60,8 +60,8 @@ def approve_occurrence(occurrence_id):
         timeline_entry = OccurrenceTimeline(
             occurrence_id=occurrence.id,
             user_id=current_user_id,
-            status_change="Validação Concluída",
-            details=f"O Gestor de Departamento {user.name} aprovou a conclusão. Status final: FECHADA."
+            action="Validação Concluída",
+            description=f"O Gestor de Departamento {user.name} aprovou a conclusão. Status final: FECHADA."
         )
         db.session.add(timeline_entry)
         db.session.commit()
@@ -110,8 +110,8 @@ def reject_occurrence(occurrence_id):
         timeline_entry = OccurrenceTimeline(
             occurrence_id=occurrence.id,
             user_id=current_user_id,
-            status_change="Validação Rejeitada",
-            details=f"O Gestor de Departamento {user.name} rejeitou a conclusão. Motivo: {rejection_reason}. Status: EM PROGRESSO."
+            action="Validação Rejeitada",
+            description=f"O Gestor de Departamento {user.name} rejeitou a conclusão. Motivo: {rejection_reason}. Status: EM PROGRESSO."
         )
         db.session.add(timeline_entry)
         db.session.commit()

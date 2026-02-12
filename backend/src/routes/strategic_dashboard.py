@@ -570,7 +570,7 @@ def get_workflow_metrics():
                 # O tempo de triagem é o tempo entre a criação e a primeira alteração de status para IN_PROGRESS
                 triage_timeline = OccurrenceTimeline.query.filter(
                     OccurrenceTimeline.occurrence_id == occ.id,
-                    OccurrenceTimeline.status_change.like('%Triagem e Atribuição Concluída%')
+                    OccurrenceTimeline.action.like('%Triagem e Atribuição Concluída%')
                 ).order_by(OccurrenceTimeline.created_at.asc()).first()
                 
                 if triage_timeline:
@@ -592,14 +592,14 @@ def get_workflow_metrics():
         total_validations = OccurrenceTimeline.query.filter(
             OccurrenceTimeline.created_at >= start_date,
             or_(
-                OccurrenceTimeline.status_change.like('%Validação Concluída%'),
-                OccurrenceTimeline.status_change.like('%Validação Rejeitada%')
+                OccurrenceTimeline.action.like('%Validação Concluída%'),
+                OccurrenceTimeline.action.like('%Validação Rejeitada%')
             )
         ).count()
         
         rejected_validations = OccurrenceTimeline.query.filter(
             OccurrenceTimeline.created_at >= start_date,
-            OccurrenceTimeline.status_change.like('%Validação Rejeitada%')
+            OccurrenceTimeline.action.like('%Validação Rejeitada%')
         ).count()
         
         rejection_rate = (rejected_validations / total_validations * 100) if total_validations > 0 else 0

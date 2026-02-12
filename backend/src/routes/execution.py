@@ -1,8 +1,18 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.models.models import db, Occurrence, OccurrenceStatus, OccurrenceTimeline, User
+from src.models.models import db, Occurrence, OccurrencePhoto, OccurrenceStatus, OccurrenceTimeline, User
 from src.utils.decorators import service_provider_required
 from datetime import datetime
+import os
+import uuid
+from werkzeug.utils import secure_filename
+
+# Caminho relativo ao diretório backend/src
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 execution_bp = Blueprint('execution', __name__)
 
@@ -70,8 +80,8 @@ def start_execution(occurrence_id):
         timeline_entry = OccurrenceTimeline(
             occurrence_id=occurrence.id,
             user_id=current_user_id,
-            status_change="Execução Iniciada",
-            details=f"O Prestador de Serviço {User.query.get(current_user_id).name} iniciou a execução."
+            action="Execução Iniciada",
+            description=f"O Prestador de Serviço {User.query.get(current_user_id).name} iniciou a execução."
         )
         db.session.add(timeline_entry)
         db.session.commit()
@@ -114,8 +124,8 @@ def complete_execution(occurrence_id):
         timeline_entry = OccurrenceTimeline(
             occurrence_id=occurrence.id,
             user_id=current_user_id,
-            status_change="Execução Concluída",
-            details=f"O Prestador de Serviço {User.query.get(current_user_id).name} concluiu a execução. Aguardando validação."
+            action="Execução Concluída",
+            description=f"O Prestador de Serviço {User.query.get(current_user_id).name} concluiu a execução. Aguardando validação."
         )
         db.session.add(timeline_entry)
         db.session.commit()
@@ -123,6 +133,68 @@ def complete_execution(occurrence_id):
         # TODO: Implementar Notificação para o Gestor do Departamento para validação
 
         return jsonify(occurrence.to_dict()), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@execution_bp.route('/occurrence/<int:occurrence_id>/upload_after_photo', methods=['POST'])
+@jwt_required()
+@service_provider_required
+def upload_after_photo(occurrence_id):
+    """
+    Faz o upload da foto "Depois" da execução.
+    """
+    try:
+        occurrence = Occurrence.query.get(occurrence_id)
+        if not occurrence:
+            return jsonify({'error': 'Ocorrência não encontrada'}), 404
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+
+        if file and allowed_file(file.filename):
+            # Criar diretório de upload se não existir
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            
+            # Gerar nome único
+            file_extension = file.filename.rsplit('.', 1)[1].lower()
+            unique_filename = f"after_{occurrence_id}_{uuid.uuid4().hex}.{file_extension}"
+            
+            # Salvar arquivo
+            file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+            file.save(file_path)
+            
+            # Criar registro no banco
+            photo = OccurrencePhoto(
+                occurrence_id=occurrence_id,
+                filename=unique_filename,
+                original_filename=secure_filename(file.filename),
+                file_size=os.path.getsize(file_path)
+            )
+            db.session.add(photo)
+            
+            # Registrar na Timeline
+            current_user_id = get_jwt_identity()
+            timeline_entry = OccurrenceTimeline(
+                occurrence_id=occurrence_id,
+                user_id=current_user_id,
+                action='after_photo_added',
+                description='Foto de conclusão (Depois) adicionada.'
+            )
+            db.session.add(timeline_entry)
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Foto enviada com sucesso',
+                'photo': photo.to_dict()
+            }), 201
+        else:
+            return jsonify({'error': 'Tipo de arquivo não permitido'}), 400
 
     except Exception as e:
         db.session.rollback()
